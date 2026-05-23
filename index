@@ -1,0 +1,4327 @@
+<!doctype html>
+<html lang="id">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SISTEM PEMBUKUAN SD NEGERI BABAKAN 04</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --card-shadow-hover: 0 20px 25px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.05);
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0;
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        .admin-only.visible {
+            display: flex;
+        }
+
+        .admin-action-col {
+            display: table-cell;
+        }
+
+        .admin-action-col.hidden {
+            display: none;
+        }
+
+        .admin-only-btn {
+            display: none;
+        }
+
+        .admin-only-btn.visible {
+            display: inline-block;
+        }
+
+        /* Login Page */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: white;
+            padding: 40px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        body.dark-mode .login-card {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        body.dark-mode .login-title {
+            color: #60a5fa;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        body.dark-mode .login-subtitle {
+            color: #94a3b8;
+        }
+
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        body.dark-mode .form-control {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Main Layout */
+        .app-wrapper {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .sidebar {
+            background: #1e293b;
+            border-right-color: #334155;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        body.dark-mode .sidebar-header {
+            border-bottom-color: #334155;
+        }
+
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        body.dark-mode .sidebar-title {
+            color: #e2e8f0;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: #f1f5f9;
+            color: var(--primary-color);
+        }
+
+        body.dark-mode .nav-item:hover {
+            background: #334155;
+            color: #60a5fa;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(30, 64, 175, 0.1) 100%);
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 12px;
+        }
+
+        body.dark-mode .nav-item.active {
+            background: rgba(96, 165, 250, 0.1);
+            color: #60a5fa;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+            gap: 20px;
+        }
+
+        body.dark-mode .topbar {
+            background: #1e293b;
+            border-bottom-color: #334155;
+        }
+
+        .topbar-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        body.dark-mode .page-title {
+            color: #e2e8f0;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: #f1f5f9;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: #e2e8f0;
+            color: var(--primary-color);
+        }
+
+        body.dark-mode .icon-btn {
+            background: #334155;
+            color: #94a3b8;
+        }
+
+        body.dark-mode .icon-btn:hover {
+            background: #475569;
+            color: #60a5fa;
+        }
+
+        .page-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            background: white;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .card:hover {
+            box-shadow: var(--card-shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode .card {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        body.dark-mode .card-header {
+            border-bottom-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-mode .stat-card {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: var(--primary-color);
+            opacity: 0.08;
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        body.dark-mode .stat-label {
+            color: #94a3b8;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        body.dark-mode .stat-value {
+            color: #60a5fa;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            color: var(--success-color);
+            margin-top: 8px;
+        }
+
+        /* Tables */
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            border: none;
+            color: #475569;
+            font-weight: 600;
+            padding: 16px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        body.dark-mode .table thead th {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        .table tbody td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+        }
+
+        body.dark-mode .table tbody td {
+            border-bottom-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        body.dark-mode .table tbody tr:hover {
+            background: #334155;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .btn-secondary:hover {
+            background: #475569;
+            color: #e2e8f0;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        /* Modal */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            background: white;
+        }
+
+        body.dark-mode .modal-content {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px;
+        }
+
+        body.dark-mode .modal-header {
+            border-bottom-color: #334155;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        body.dark-mode .modal-title {
+            color: #e2e8f0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        body.dark-mode .form-label {
+            color: #cbd5e1;
+        }
+
+        /* Search Bar */
+        .search-box {
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        body.dark-mode .search-box input {
+            background: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        /* Badge */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        body.dark-mode .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        body.dark-mode .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        body.dark-mode .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+                padding: 15px;
+            }
+
+            .page-content {
+                padding: 15px;
+            }
+
+            .topbar {
+                padding: 15px;
+                height: auto;
+                flex-wrap: wrap;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .table {
+                font-size: 12px;
+            }
+
+            .table thead th,
+            .table tbody td {
+                padding: 12px;
+            }
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(37, 99, 235, 0.1);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        /* Role Badge */
+        .role-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-admin {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        body.dark-mode .role-admin {
+            background: rgba(37, 99, 235, 0.2);
+            color: #93c5fd;
+        }
+
+        .role-guru {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        body.dark-mode .role-guru {
+            background: rgba(16, 185, 129, 0.2);
+            color: #86efac;
+        }
+
+        .form-divider {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        body.dark-mode .form-divider {
+            border-top-color: #334155;
+        }
+
+        .color-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            display: inline-block;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .laporan-section {
+            margin-bottom: 30px;
+        }
+
+        .laporan-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1e293b;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        body.dark-mode .laporan-header {
+            background: #334155;
+            color: #e2e8f0;
+        }
+    </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+ </head>
+ <body>
+  <div id="app" class="app-wrapper hidden"><!-- Sidebar Navigation -->
+   <div class="sidebar">
+    <div class="sidebar-header">
+     <div class="sidebar-logo">
+      SP
+     </div>
+     <div class="sidebar-title">
+      SARPRAS
+     </div>
+    </div>
+    <nav class="nav-menu" id="mainMenu">
+     <div class="nav-item active" data-menu="dashboard"><i data-lucide="home" style="width: 20px; height: 20px;"></i> <span>Dashboard</span>
+     </div>
+     <div class="nav-item" data-menu="aset"><i data-lucide="package" style="width: 20px; height: 20px;"></i> <span>Aset</span>
+     </div>
+     <div class="nav-item" data-menu="bhp"><i data-lucide="boxes" style="width: 20px; height: 20px;"></i> <span>Barang Habis Pakai</span>
+     </div>
+     <div class="nav-item" data-menu="peminjaman"><i data-lucide="hand-helping" style="width: 20px; height: 20px;"></i> <span>Peminjaman</span>
+     </div>
+     <div class="nav-item" data-menu="stok-opname"><i data-lucide="clipboard-list" style="width: 20px; height: 20px;"></i> <span>Stok Opname</span>
+     </div>
+     <div class="nav-item" data-menu="log-keluar"><i data-lucide="log-out" style="width: 20px; height: 20px;"></i> <span>Log Stok Keluar</span>
+     </div>
+     <div class="nav-item admin-only" data-menu="inventaris"><i data-lucide="book" style="width: 20px; height: 20px;"></i> <span>Inventaris</span>
+     </div>
+     <div class="nav-item admin-only" data-menu="laporan"><i data-lucide="file-text" style="width: 20px; height: 20px;"></i> <span>Rekap Laporan</span>
+     </div>
+     <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+     <div class="nav-item admin-only" data-menu="settings"><i data-lucide="settings" style="width: 20px; height: 20px;"></i> <span>Pengaturan</span>
+     </div>
+     <div class="nav-item" id="logoutBtn" style="margin-top: 10px;"><i data-lucide="log-out" style="width: 20px; height: 20px;"></i> <span>Logout</span>
+     </div>
+    </nav>
+   </div><!-- Main Content -->
+   <div class="content-area"><!-- Top Bar -->
+    <div class="topbar">
+     <div class="topbar-left">
+      <h2 class="page-title" id="pageTitle">Dashboard</h2>
+     </div>
+     <div class="topbar-right"><button class="icon-btn" id="themeToggle" title="Toggle Theme"> <i data-lucide="moon" style="width: 20px; height: 20px;"></i> </button>
+      <div style="display: flex; align-items: center; gap: 8px;">
+       <div style="text-align: right;">
+        <div style="font-weight: 600; color: #1e293b; font-size: 14px;" id="userDisplay">
+         Admin
+        </div>
+        <div style="font-size: 12px; color: #64748b;" id="roleDisplay">
+         Administrator
+        </div>
+       </div>
+       <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px;" id="userAvatar">
+        A
+       </div>
+      </div>
+     </div>
+    </div><!-- Page Content -->
+    <div class="page-content"><!-- Dashboard Page -->
+     <div id="dashboard-page" class="page-section">
+      <div class="row mb-4">
+       <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+         <div class="stat-label">
+          Total Aset
+         </div>
+         <div class="stat-value" id="totalAset">
+          0
+         </div>
+         <div class="stat-change">
+          ↑ 12% dari bulan lalu
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+         <div class="stat-label">
+          BHP Items
+         </div>
+         <div class="stat-value" id="totalBHP">
+          0
+         </div>
+         <div class="stat-change">
+          ↑ 5% dari bulan lalu
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+         <div class="stat-label">
+          Sedang Dipinjam
+         </div>
+         <div class="stat-value" id="totalDipinjam">
+          0
+         </div>
+         <div class="stat-change">
+          ↑ 8% dari bulan lalu
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+         <div class="stat-label">
+          Stok Kritis
+         </div>
+         <div class="stat-value" id="stokKritis">
+          0
+         </div>
+         <div class="stat-change">
+          ↑ 3% dari bulan lalu
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="row">
+       <div class="col-lg-6">
+        <div class="card">
+         <div class="card-header">
+          Kondisi Aset
+         </div>
+         <div class="card-body">
+          <div class="chart-container">
+           <canvas id="kondisiChart"></canvas>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="card">
+         <div class="card-header">
+          Tren Konsumsi ATK
+         </div>
+         <div class="card-body">
+          <div style="margin-bottom: 15px;"><button class="btn btn-sm" style="background: var(--primary-color); color: white; margin-right: 5px;" id="btnBulan">Bulanan</button> <button class="btn btn-sm btn-secondary" id="btnTahunan">Tahunan</button>
+          </div>
+          <div class="chart-container">
+           <canvas id="trenChart"></canvas>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Aset Page -->
+     <div id="aset-page" class="page-section hidden">
+      <div class="filter-group">
+       <div class="search-box"><i data-lucide="search"></i> <input type="text" placeholder="Cari Aset..." id="searchAset">
+       </div><select id="filterKategoriAset" class="form-control" style="width: 150px;"> <option value="">Kategori</option> <option value="Elektronik">Elektronik</option> <option value="Mebel">Mebel</option> <option value="Dokumen">Dokumen</option> </select> <select id="filterStatusAset" class="form-control" style="width: 150px;"> <option value="">Status</option> <option value="Tersedia">Tersedia</option> <option value="Dipinjam">Dipinjam</option> <option value="Perbaikan">Perbaikan</option> </select> <select id="filterSumberAset" class="form-control" style="width: 150px;"> <option value="">Sumber Dana</option> </select> <select id="filterTahunAset" class="form-control" style="width: 120px;"> <option value="">Tahun</option> </select>
+       <div id="adminAsetBtns" style="display: none; gap: 10px; display: flex;">
+        <button class="btn btn-primary btn-sm" id="btnDownloadTemplateAset"> <i data-lucide="download" style="width: 14px; height: 14px; display: inline; margin-right: 5px;"></i> Template </button> <button class="btn btn-primary btn-sm" id="btnImportAset"> <i data-lucide="upload" style="width: 14px; height: 14px; display: inline; margin-right: 5px;"></i> Import </button> <button class="btn btn-primary btn-sm" id="btnTambahAset"> <i data-lucide="plus" style="width: 14px; height: 14px; display: inline; margin-right: 5px;"></i> Tambah </button>
+       </div>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Nama Aset</th>
+           <th>Sumber Dana</th>
+           <th>Tahun Anggaran</th>
+           <th>Tanggal Penerimaan</th>
+           <th>Kategori</th>
+           <th>Jumlah</th>
+           <th>Kondisi</th>
+           <th>Status</th>
+           <th>Lokasi</th>
+           <th id="asetActionCol" style="display: none;">Aksi</th>
+          </tr>
+         </thead>
+         <tbody id="asetTableBody">
+          <tr>
+           <td colspan="11" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div><input type="file" id="importFileAset" style="display: none;" accept=".xlsx,.xls">
+     </div><!-- BHP Page -->
+     <div id="bhp-page" class="page-section hidden">
+      <div class="filter-group">
+       <div class="search-box"><i data-lucide="search"></i> <input type="text" placeholder="Cari Barang..." id="searchBHP">
+       </div><select id="filterKategoriBHP" class="form-control" style="width: 150px;"> <option value="">Kategori</option> <option value="ATK">ATK</option> <option value="Kebersihan">Kebersihan</option> <option value="Elektronik">Elektronik</option> </select> <select id="filterStatusBHP" class="form-control" style="width: 150px;"> <option value="">Status</option> <option value="Aman">Aman</option> <option value="Kritis">Kritis</option> </select>
+       <div id="adminBHPBtns" style="display: none; gap: 10px; display: flex;">
+        <button class="btn btn-primary btn-sm" id="btnDownloadTemplateBHP"> <i data-lucide="download" style="width: 14px; height: 14px; display: inline; margin-right: 5px;"></i> Template </button> <button class="btn btn-primary btn-sm" id="btnImportBHP"> <i data-lucide="upload" style="width: 14px; height: 14px; display: inline; margin-right: 5px;"></i> Import </button> <button class="btn btn-primary btn-sm" id="btnTambahBHP"> <i data-lucide="plus" style="width: 14px; height: 14px; display: inline; margin-right: 5px;"></i> Tambah </button>
+       </div>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Nama Barang</th>
+           <th>Kategori</th>
+           <th>Stok</th>
+           <th>Satuan</th>
+           <th>Minimal</th>
+           <th>Status</th>
+           <th id="bhpActionCol" style="display: none;">Aksi</th>
+          </tr>
+         </thead>
+         <tbody id="bhpTableBody">
+          <tr>
+           <td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div><input type="file" id="importFileBHP" style="display: none;" accept=".xlsx,.xls">
+     </div><!-- Peminjaman Page -->
+     <div id="peminjaman-page" class="page-section hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+       <div class="search-box"><i data-lucide="search"></i> <input type="text" placeholder="Cari Peminjaman..." id="searchPeminjaman">
+       </div><button class="btn btn-primary" id="btnTambahPeminjaman" style="display: none;"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah Peminjaman </button>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Aset</th>
+           <th>Peminjam</th>
+           <th>Tgl Pinjam</th>
+           <th>Tgl Kembali</th>
+           <th>Status</th>
+           <th id="peminjamanActionCol" style="display: none;">Aksi</th>
+          </tr>
+         </thead>
+         <tbody id="peminjamanTableBody">
+          <tr>
+           <td colspan="7" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Stok Opname Page -->
+     <div id="stok-opname-page" class="page-section hidden">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;"><button class="btn btn-primary" id="btnTambahOpname" style="display: none;"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah Stok Opname </button>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Barang</th>
+           <th>Sistem</th>
+           <th>Fisik</th>
+           <th>Selisih</th>
+           <th>Keterangan</th>
+           <th>Tanggal</th>
+           <th>Petugas</th>
+          </tr>
+         </thead>
+         <tbody id="opnameTableBody">
+          <tr>
+           <td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Log Keluar Page -->
+     <div id="log-keluar-page" class="page-section hidden">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;"><button class="btn btn-primary" id="btnTambahLogKeluar" style="display: none;"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah Log Keluar </button>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Barang</th>
+           <th>Jumlah</th>
+           <th>Satuan</th>
+           <th>Penerima</th>
+           <th>Keperluan</th>
+           <th>Tanggal</th>
+           <th>Petugas</th>
+           <th id="keluarActionCol" style="display: none;">Aksi</th>
+          </tr>
+         </thead>
+         <tbody id="keluarTableBody">
+          <tr>
+           <td colspan="9" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Inventaris Page -->
+     <div id="inventaris-page" class="page-section hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+       <div class="search-box"><i data-lucide="search"></i> <input type="text" placeholder="Cari Inventaris..." id="searchInventaris">
+       </div><button class="btn btn-primary" id="btnTambahInventaris"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah Inventaris </button>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Barang</th>
+           <th>Guru</th>
+           <th>Kelas</th>
+           <th>Jumlah</th>
+           <th>Kondisi</th>
+           <th>Tanggal</th>
+           <th>Aksi</th>
+          </tr>
+         </thead>
+         <tbody id="inventarisTableBody">
+          <tr>
+           <td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Rekap Laporan Page -->
+     <div id="laporan-page" class="page-section hidden">
+      <div style="margin-bottom: 20px;">
+       <div class="filter-group">
+        <select id="filterLaporanPeriode" class="form-control" style="width: 150px;"> <option value="bulanan">Bulanan</option> <option value="tahunan">Tahunan</option> </select> <select id="filterLaporanBulan" class="form-control" style="width: 120px;"> <option value="01">Januari</option> <option value="02">Februari</option> <option value="03">Maret</option> <option value="04">April</option> <option value="05">Mei</option> <option value="06">Juni</option> <option value="07">Juli</option> <option value="08">Agustus</option> <option value="09">September</option> <option value="10">Oktober</option> <option value="11">November</option> <option value="12">Desember</option> </select> <input type="number" id="filterLaporanTahun" class="form-control" placeholder="Tahun" style="width: 100px;" value="2024"> <button class="btn btn-primary btn-sm" id="btnRefreshLaporan"> <i data-lucide="refresh-cw" style="width: 14px; height: 14px; display: inline; margin-right: 5px;"></i> Refresh </button> <button class="btn btn-primary btn-sm" id="btnDownloadLaporanPDF"> <i data-lucide="download" style="width: 14px; height: 14px; display: inline; margin-right: 5px;"></i> PDF </button>
+       </div>
+      </div>
+      <div id="laporanContainer"></div>
+     </div><!-- Settings Page -->
+     <div id="settings-page" class="page-section hidden">
+      <div class="row">
+       <div class="col-lg-8">
+        <div class="card">
+         <div class="card-header">
+          Pengaturan Tema
+         </div>
+         <div class="card-body">
+          <div class="mb-3"><label class="form-label">Warna Utama</label>
+           <div style="display: flex; gap: 10px;"><input type="color" id="primaryColor" class="form-control" style="width: 100px; cursor: pointer;"> <input type="text" id="primaryColorText" class="form-control" readonly style="flex: 1;">
+           </div>
+          </div>
+          <div class="mb-3"><label class="form-label">Warna Sekunder</label>
+           <div style="display: flex; gap: 10px;"><input type="color" id="secondaryColor" class="form-control" style="width: 100px; cursor: pointer;"> <input type="text" id="secondaryColorText" class="form-control" readonly style="flex: 1;">
+           </div>
+          </div>
+          <hr class="form-divider">
+          <div class="mb-3"><label class="form-label">URL Logo Google Drive</label> <small style="display: block; margin-bottom: 10px; color: #64748b;">Konversi Link: Ganti /file/d/{ID}/view menjadi /uc?id={ID}&amp;export=download</small> <input type="text" id="logoUrl" class="form-control" placeholder="Paste URL Google Drive...">
+          </div>
+          <div class="mb-3"><label class="form-label">Live Preview Logo</label>
+           <div style="width: 100px; height: 100px; border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center;"><img id="logoPreview" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+           </div>
+          </div><button class="btn btn-primary" id="btnSimpanPengaturan">Simpan Pengaturan</button>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-4">
+        <div class="card">
+         <div class="card-header">
+          Kelola User
+         </div>
+         <div class="card-body"><button class="btn btn-primary w-100 mb-3" id="btnTambahUser"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah User </button>
+          <div style="max-height: 500px; overflow-y: auto;">
+           <table class="table table-sm">
+            <thead>
+             <tr>
+              <th style="font-size: 12px;">Username</th>
+              <th style="font-size: 12px;">Role</th>
+              <th style="font-size: 12px;">Aksi</th>
+             </tr>
+            </thead>
+            <tbody id="userTableBody">
+             <tr>
+              <td colspan="3" style="text-align: center; font-size: 12px;">Tidak ada user</td>
+             </tr>
+            </tbody>
+           </table>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Login Page -->
+  <div id="login-page" class="login-container">
+   <div class="login-card">
+    <div class="login-title">
+     
+    </div>
+    <div class="login-subtitle">
+     Sistem Pembukuan SD Negeri Babakan 04
+    </div>
+    <form id="loginForm" style="display: flex; flex-direction: column; gap: 15px;">
+     <div><label class="form-label">Username</label> <input type="text" id="username" class="form-control" placeholder="Masukkan username..." required>
+     </div>
+     <div><label class="form-label">Password</label> <input type="password" id="password" class="form-control" placeholder="Masukkan password..." required>
+     </div><button type="submit" class="login-btn">Masuk</button>
+    </form>
+    <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #64748b;">
+     <p>Demo Admin: <strong>admin</strong> | Password: <strong>admin123</strong></p>
+     <p>Demo Guru: <strong>guru</strong> | Password: <strong>guru123</strong></p>
+    </div>
+   </div>
+  </div><!-- Modal Tambah Aset -->
+  <div class="modal fade" id="modalAset" tabindex="-1">
+   <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah/Edit Aset</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formAset">
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">ID Aset</label> <input type="text" id="idAset" class="form-control" placeholder="Otomatis atau Manual">
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Nama Aset *</label> <input type="text" id="namaAset" class="form-control" required>
+        </div>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Sumber Dana</label> <input type="text" id="sumberDana" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Tahun Anggaran</label> <input type="number" id="tahunAnggaran" class="form-control">
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Tanggal Penerimaan</label> <input type="date" id="tanggalPenerimaan" class="form-control">
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Kategori</label> <select id="kategoriaset" class="form-control"> <option value="">Pilih Kategori</option> <option value="Elektronik">Elektronik</option> <option value="Mebel">Mebel</option> <option value="Dokumen">Dokumen</option> </select>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Jumlah</label> <input type="number" id="jumlahAset" class="form-control" required>
+        </div>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Kondisi</label> <select id="kondisiAset" class="form-control"> <option value="">Pilih Kondisi</option> <option value="Baik">Baik</option> <option value="Rusak Ringan">Rusak Ringan</option> <option value="Rusak Berat">Rusak Berat</option> </select>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Status</label> <select id="statusAset" class="form-control"> <option value="">Pilih Status</option> <option value="Tersedia">Tersedia</option> <option value="Dipinjam">Dipinjam</option> <option value="Perbaikan">Perbaikan</option> </select>
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Lokasi Ruangan</label> <input type="text" id="lokasiAset" class="form-control">
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanAset">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah BHP -->
+  <div class="modal fade" id="modalBHP" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah/Edit Barang Habis Pakai</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formBHP">
+       <div class="mb-3"><label class="form-label">ID Barang</label> <input type="text" id="idBHP" class="form-control" placeholder="Otomatis atau Manual">
+       </div>
+       <div class="mb-3"><label class="form-label">Nama Barang *</label> <input type="text" id="namaBHP" class="form-control" required>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Kategori</label> <select id="kategoriBHP" class="form-control"> <option value="">Pilih Kategori</option> <option value="ATK">ATK</option> <option value="Kebersihan">Kebersihan</option> <option value="Elektronik">Elektronik</option> </select>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Stok</label> <input type="number" id="stokBHP" class="form-control" required>
+        </div>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Satuan</label> <select id="satuanBHP" class="form-control"> <option value="">Pilih Satuan</option> <option value="Rim">Rim</option> <option value="Pcs">Pcs</option> <option value="Buah">Buah</option> <option value="Meter">Meter</option> </select>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Minimal</label> <input type="number" id="minimalBHP" class="form-control">
+        </div>
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanBHP">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah Peminjaman -->
+  <div class="modal fade" id="modalPeminjaman" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah Peminjaman</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formPeminjaman">
+       <div class="mb-3"><label class="form-label">ID Peminjaman</label> <input type="text" id="idPeminjaman" class="form-control" placeholder="Otomatis">
+       </div>
+       <div class="mb-3"><label class="form-label">Sumber Peminjaman *</label> <select id="sumberPeminjaman" class="form-control" required> <option value="">Pilih Sumber</option> <option value="Sekolah">Dari Sekolah</option> <option value="Kelas">Dari Kelas</option> </select>
+       </div>
+       <div class="mb-3"><label class="form-label">Pilih Aset *</label> <select id="asetSelect" class="form-control" required> <option value="">Pilih Aset</option> </select>
+       </div>
+       <div class="mb-3"><label class="form-label">Tipe Peminjam *</label> <select id="tipePeminjam" class="form-control" required> <option value="">Pilih Tipe</option> <option value="Guru">Guru</option> <option value="Admin">Admin</option> <option value="Staff">Staff</option> <option value="Siswa">Siswa</option> </select>
+       </div>
+       <div id="peminjamContainer">
+        <div class="mb-3"><label class="form-label">Nama Peminjam *</label> <select id="namaPeminjam" class="form-control" required> <option value="">Pilih Nama</option> </select>
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Tanggal Pinjam *</label> <input type="date" id="tglPinjam" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Tanggal Kembali (Perkiraan)</label> <input type="date" id="tglKembali" class="form-control">
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanPeminjaman">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah Stok Opname -->
+  <div class="modal fade" id="modalOpname" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah Stok Opname</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formOpname">
+       <div class="mb-3"><label class="form-label">ID</label> <input type="text" id="idOpname" class="form-control" placeholder="Otomatis">
+       </div>
+       <div class="mb-3"><label class="form-label">Barang *</label> <input type="text" id="barangOpname" class="form-control" required>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Sistem (Qty) *</label> <input type="number" id="sistemOpname" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Fisik (Qty) *</label> <input type="number" id="fisikOpname" class="form-control" required>
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Keterangan</label> <textarea id="keteranganOpname" class="form-control" rows="3"></textarea>
+       </div>
+       <div class="mb-3"><label class="form-label">Tanggal *</label> <input type="date" id="tanggalOpname" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Petugas</label> <input type="text" id="petugasOpname" class="form-control">
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanOpname">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah Log Keluar -->
+  <div class="modal fade" id="modalLogKeluar" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah Log Stok Keluar</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formLogKeluar">
+       <div class="mb-3"><label class="form-label">ID</label> <input type="text" id="idKeluar" class="form-control" placeholder="Otomatis">
+       </div>
+       <div class="mb-3"><label class="form-label">Barang *</label> <input type="text" id="barangKeluar" class="form-control" required>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Jumlah *</label> <input type="number" id="jumlahKeluar" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Satuan</label> <select id="satuanKeluar" class="form-control"> <option value="Pcs">Pcs</option> <option value="Rim">Rim</option> <option value="Buah">Buah</option> <option value="Meter">Meter</option> </select>
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Penerima *</label> <input type="text" id="penerimаKeluar" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Keperluan</label> <textarea id="perluanKeluar" class="form-control" rows="3"></textarea>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Tanggal *</label> <input type="date" id="tanggalKeluar" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Petugas</label> <input type="text" id="petugasKeluar" class="form-control">
+        </div>
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanLogKeluar">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah Inventaris -->
+  <div class="modal fade" id="modalInventaris" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah/Edit Inventaris</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formInventaris">
+       <div class="mb-3"><label class="form-label">ID Inventaris</label> <input type="text" id="idInventaris" class="form-control" placeholder="Otomatis">
+       </div>
+       <div class="mb-3"><label class="form-label">Nama Barang *</label> <input type="text" id="barangInventaris" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Guru/Penerima *</label> <input type="text" id="guruInventaris" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Kelas</label> <input type="text" id="kelasInventaris" class="form-control">
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Jumlah *</label> <input type="number" id="jumlahInventaris" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Kondisi</label> <select id="kondisiInventaris" class="form-control"> <option value="Baik">Baik</option> <option value="Rusak Ringan">Rusak Ringan</option> <option value="Rusak Berat">Rusak Berat</option> </select>
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Tanggal Inventaris *</label> <input type="date" id="tanggalInventaris" class="form-control" required>
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanInventaris">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah User -->
+  <div class="modal fade" id="modalUser" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah/Edit User</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formUser">
+       <div class="mb-3"><label class="form-label">Username</label> <input type="text" id="usernameUser" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Password</label> <input type="password" id="passwordUser" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Role</label> <select id="roleUser" class="form-control" required> <option value="">Pilih Role</option> <option value="Admin">Admin</option> <option value="Guru">Guru</option> </select>
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanUser">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+        // Global State
+        const state = {
+            currentUser: null,
+            currentRole: null,
+            darkMode: false,
+            data: {
+                users: [],
+                asets: [],
+                bhp: [],
+                peminjaman: [],
+                opnames: [],
+                keluar: [],
+                inventaris: []
+            },
+            charts: {},
+            editingId: null
+        };
+
+        // Initialize SDK
+        window.elementSdk.init({
+            defaultConfig: {
+                app_title: "SISTEM PEMBUKUAN SD NEGERI BABAKAN 04",
+                school_name: "SD Negeri Babakan 04"
+            },
+            onConfigChange: async (config) => {
+                // Config updates handled
+            },
+            mapToCapabilities: (config) => ({
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            }),
+            mapToEditPanelValues: (config) => new Map([
+                ["app_title", config.app_title],
+                ["school_name", config.school_name]
+            ])
+        });
+
+        // Data SDK Handler
+        const dataHandler = {
+            onDataChanged(data) {
+                if (!data || data.length === 0) return;
+                
+                state.data.users = data.filter(d => d.type === 'user');
+                state.data.asets = data.filter(d => d.type === 'aset');
+                state.data.bhp = data.filter(d => d.type === 'bhp');
+                state.data.peminjaman = data.filter(d => d.type === 'peminjaman');
+                state.data.opnames = data.filter(d => d.type === 'opname');
+                state.data.keluar = data.filter(d => d.type === 'logkeluar');
+                state.data.inventaris = data.filter(d => d.type === 'inventaris');
+
+                updateAllUI();
+            }
+        };
+
+        // Initialize Data SDK
+        (async () => {
+            const result = await window.dataSdk.init(dataHandler);
+            if (!result.isOk) {
+                console.error('Data SDK init failed');
+            }
+        })();
+
+        // Helper: Generate ID
+        function generateId(prefix) {
+            return `${prefix}-${Date.now()}`;
+        }
+
+        // Helper: Format Date
+        function formatDate(date) {
+            if (!date) return '-';
+            return new Date(date).toLocaleDateString('id-ID');
+        }
+
+        // Helper: Update UI based on role
+        function updateUIByRole() {
+            const isAdmin = state.currentRole === 'Admin';
+            
+            // Show/hide admin menus
+            document.querySelectorAll('.admin-only').forEach(el => {
+                if (isAdmin) {
+                    el.classList.add('visible');
+                } else {
+                    el.classList.remove('visible');
+                }
+            });
+
+            // Show/hide admin buttons in pages
+            document.getElementById('adminAsetBtns').style.display = isAdmin ? 'flex' : 'none';
+            document.getElementById('adminBHPBtns').style.display = isAdmin ? 'flex' : 'none';
+            document.getElementById('btnTambahOpname').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('btnTambahLogKeluar').style.display = isAdmin ? 'block' : 'none';
+            
+            // Show Tambah Peminjaman for both Admin and Guru
+            document.getElementById('btnTambahPeminjaman').style.display = 'block';
+
+            // Hide action columns for non-admin
+            if (!isAdmin) {
+                document.getElementById('asetActionCol').style.display = 'none';
+                document.getElementById('bhpActionCol').style.display = 'none';
+                document.getElementById('peminjamanActionCol').style.display = 'none';
+                document.getElementById('keluarActionCol').style.display = 'none';
+            } else {
+                document.getElementById('asetActionCol').style.display = 'table-cell';
+                document.getElementById('bhpActionCol').style.display = 'table-cell';
+                document.getElementById('peminjamanActionCol').style.display = 'table-cell';
+                document.getElementById('keluarActionCol').style.display = 'table-cell';
+            }
+        }
+
+        // Theme Toggle
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            state.darkMode = !state.darkMode;
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('themeToggle').querySelector('i').setAttribute('data-lucide', state.darkMode ? 'sun' : 'moon');
+            lucide.createIcons();
+        });
+
+        // Login Handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Demo credentials
+            if ((username === 'admin' && password === 'admin123') || 
+                (username === 'guru' && password === 'guru123')) {
+                state.currentUser = username;
+                state.currentRole = username === 'admin' ? 'Admin' : 'Guru';
+                
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                document.getElementById('userDisplay').textContent = username;
+                document.getElementById('roleDisplay').textContent = state.currentRole;
+                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+
+                updateUIByRole();
+                lucide.createIcons();
+                updateAllUI();
+            } else {
+                alert('Username atau password salah!');
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            state.currentUser = null;
+            state.currentRole = null;
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        });
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            if (item.id !== 'logoutBtn') {
+                item.addEventListener('click', () => {
+                    const menu = item.dataset.menu;
+                    if (!menu) return;
+
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+
+                    document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+                    document.getElementById(`${menu}-page`).classList.remove('hidden');
+
+                    const titles = {
+                        dashboard: 'Dashboard',
+                        aset: 'Data Aset',
+                        bhp: 'Barang Habis Pakai',
+                        peminjaman: 'Peminjaman Aset',
+                        'stok-opname': 'Stok Opname',
+                        'log-keluar': 'Log Stok Keluar',
+                        inventaris: 'Inventaris',
+                        laporan: 'Rekap Laporan',
+                        settings: 'Pengaturan'
+                    };
+                    document.getElementById('pageTitle').textContent = titles[menu];
+
+                    if (menu === 'dashboard') {
+                        setTimeout(() => {
+                            updateCharts();
+                        }, 100);
+                    } else if (menu === 'laporan') {
+                        generateLaporan();
+                    }
+                });
+            }
+        });
+
+        // ===== ASET FUNCTIONS =====
+        document.getElementById('btnTambahAset').addEventListener('click', () => {
+            state.editingId = null;
+            document.getElementById('idAset').value = '';
+            document.getElementById('formAset').reset();
+            new bootstrap.Modal(document.getElementById('modalAset')).show();
+        });
+
+        document.getElementById('btnSimpanAset').addEventListener('click', async () => {
+            const data = {
+                type: 'aset',
+                id_aset: document.getElementById('idAset').value || generateId('AST'),
+                nama_barang: document.getElementById('namaAset').value,
+                sumber_dana: document.getElementById('sumberDana').value,
+                tahun_anggaran: document.getElementById('tahunAnggaran').value,
+                tanggal_penerimaan: document.getElementById('tanggalPenerimaan').value,
+                kategori: document.getElementById('kategoriaset').value,
+                jumlah: parseInt(document.getElementById('jumlahAset').value),
+                kondisi: document.getElementById('kondisiAset').value,
+                status: document.getElementById('statusAset').value,
+                lokasi_ruangan: document.getElementById('lokasiAset').value,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalAset')).hide();
+                document.getElementById('formAset').reset();
+            }
+        });
+
+        // Download Template Aset
+        document.getElementById('btnDownloadTemplateAset').addEventListener('click', () => {
+            const template = [
+                { ID: 'AST-001', 'Nama Aset': 'Laptop', 'Sumber Dana': 'APBD', 'Tahun Anggaran': 2024, 'Kategori': 'Elektronik', 'Jumlah': 5, 'Kondisi': 'Baik', 'Status': 'Tersedia' }
+            ];
+            const ws = XLSX.utils.json_to_sheet(template);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Aset');
+            XLSX.writeFile(wb, 'template_aset.xlsx');
+        });
+
+        // Import Aset
+        document.getElementById('btnImportAset').addEventListener('click', () => {
+            document.getElementById('importFileAset').click();
+        });
+
+        document.getElementById('importFileAset').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                for (const row of jsonData) {
+                    const data = {
+                        type: 'aset',
+                        id_aset: row.ID || generateId('AST'),
+                        nama_barang: row['Nama Aset'],
+                        sumber_dana: row['Sumber Dana'],
+                        tahun_anggaran: row['Tahun Anggaran'],
+                        kategori: row.Kategori,
+                        jumlah: row.Jumlah,
+                        kondisi: row.Kondisi,
+                        status: row.Status,
+                        created_at: new Date().toISOString()
+                    };
+                    await window.dataSdk.create(data);
+                }
+                alert('Import selesai!');
+                document.getElementById('importFileAset').value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Filter Aset
+        document.getElementById('searchAset').addEventListener('input', updateAsetTable);
+        document.getElementById('filterKategoriAset').addEventListener('change', updateAsetTable);
+        document.getElementById('filterStatusAset').addEventListener('change', updateAsetTable);
+        document.getElementById('filterSumberAset').addEventListener('change', updateAsetTable);
+        document.getElementById('filterTahunAset').addEventListener('change', updateAsetTable);
+
+        // ===== BHP FUNCTIONS =====
+        document.getElementById('btnTambahBHP').addEventListener('click', () => {
+            state.editingId = null;
+            document.getElementById('idBHP').value = '';
+            document.getElementById('formBHP').reset();
+            new bootstrap.Modal(document.getElementById('modalBHP')).show();
+        });
+
+        document.getElementById('btnSimpanBHP').addEventListener('click', async () => {
+            const stok = parseInt(document.getElementById('stokBHP').value);
+            const minimal = parseInt(document.getElementById('minimalBHP').value);
+            const statusBHP = stok <= minimal ? 'Kritis' : 'Aman';
+
+            const data = {
+                type: 'bhp',
+                id_bhp: document.getElementById('idBHP').value || generateId('BHP'),
+                nama_bhp: document.getElementById('namaBHP').value,
+                kategori: document.getElementById('kategoriBHP').value,
+                stok: stok,
+                satuan: document.getElementById('satuanBHP').value,
+                minimal: minimal,
+                status_bhp: statusBHP,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalBHP')).hide();
+                document.getElementById('formBHP').reset();
+            }
+        });
+
+        // Download Template BHP
+        document.getElementById('btnDownloadTemplateBHP').addEventListener('click', () => {
+            const template = [
+                { ID: 'BHP-001', 'Nama Barang': 'Kertas A4', 'Kategori': 'ATK', 'Stok': 100, 'Satuan': 'Rim', 'Minimal': 20 }
+            ];
+            const ws = XLSX.utils.json_to_sheet(template);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'BHP');
+            XLSX.writeFile(wb, 'template_bhp.xlsx');
+        });
+
+        // Import BHP
+        document.getElementById('btnImportBHP').addEventListener('click', () => {
+            document.getElementById('importFileBHP').click();
+        });
+
+        document.getElementById('importFileBHP').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                for (const row of jsonData) {
+                    const stok = row.Stok;
+                    const minimal = row.Minimal;
+                    const data = {
+                        type: 'bhp',
+                        id_bhp: row.ID || generateId('BHP'),
+                        nama_bhp: row['Nama Barang'],
+                        kategori: row.Kategori,
+                        stok: stok,
+                        satuan: row.Satuan,
+                        minimal: minimal,
+                        status_bhp: stok <= minimal ? 'Kritis' : 'Aman',
+                        created_at: new Date().toISOString()
+                    };
+                    await window.dataSdk.create(data);
+                }
+                alert('Import selesai!');
+                document.getElementById('importFileBHP').value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Filter BHP
+        document.getElementById('searchBHP').addEventListener('input', updateBHPTable);
+        document.getElementById('filterKategoriBHP').addEventListener('change', updateBHPTable);
+        document.getElementById('filterStatusBHP').addEventListener('change', updateBHPTable);
+
+        // ===== PEMINJAMAN FUNCTIONS =====
+        document.getElementById('btnTambahPeminjaman').addEventListener('click', () => {
+            const asetSelect = document.getElementById('asetSelect');
+            asetSelect.innerHTML = '<option value="">Pilih Aset</option>';
+            state.data.asets.forEach(aset => {
+                if (aset.status === 'Tersedia') {
+                    asetSelect.innerHTML += `<option value="${aset.id_aset}">${aset.nama_barang}</option>`;
+                }
+            });
+
+            document.getElementById('idPeminjaman').value = '';
+            document.getElementById('formPeminjaman').reset();
+            new bootstrap.Modal(document.getElementById('modalPeminjaman')).show();
+        });
+
+        document.getElementById('tipePeminjam').addEventListener('change', (e) => {
+            const container = document.getElementById('peminjamContainer');
+            if (e.target.value === 'Siswa') {
+                container.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label">Nama Siswa</label>
+                        <input type="text" id="namaSiswa" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kelas</label>
+                        <input type="text" id="kelasSiswa" class="form-control" required>
+                    </div>
+                `;
+            } else {
+                const nama = document.getElementById('namaPeminjam');
+                nama.innerHTML = '<option value="">Pilih Nama</option>';
+                state.data.users.filter(u => u.role === e.target.value).forEach(user => {
+                    nama.innerHTML += `<option value="${user.username}">${user.username}</option>`;
+                });
+                container.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label">Nama Peminjam</label>
+                        <select id="namaPeminjam" class="form-control" required>
+                            <option value="">Pilih Nama</option>
+                        </select>
+                    </div>
+                `;
+                state.data.users.filter(u => u.role === e.target.value).forEach(user => {
+                    document.getElementById('namaPeminjam').innerHTML += `<option value="${user.username}">${user.username}</option>`;
+                });
+            }
+        });
+
+        document.getElementById('btnSimpanPeminjaman').addEventListener('click', async () => {
+            const tipePeminjam = document.getElementById('tipePeminjam').value;
+            let namaPeminjam;
+            let kelasPeminjam = '';
+
+            if (tipePeminjam === 'Siswa') {
+                namaPeminjam = document.getElementById('namaSiswa').value;
+                kelasPeminjam = document.getElementById('kelasSiswa').value;
+            } else {
+                namaPeminjam = document.getElementById('namaPeminjam').value;
+            }
+
+            const idAset = document.getElementById('asetSelect').value;
+            const aset = state.data.asets.find(a => a.id_aset === idAset);
+
+            const data = {
+                type: 'peminjaman',
+                id_log: document.getElementById('idPeminjaman').value || generateId('LOG'),
+                id_aset_log: idAset,
+                nama_barang: aset?.nama_barang || '',
+                nama_peminjam: namaPeminjam,
+                tipe_peminjam: tipePeminjam,
+                kelas_peminjam: kelasPeminjam,
+                sumber_peminjam: document.getElementById('sumberPeminjaman').value,
+                tanggal_pinjam: document.getElementById('tglPinjam').value,
+                tanggal_kembali: document.getElementById('tglKembali').value,
+                status_pinjam: 'Aktif',
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalPeminjaman')).hide();
+            }
+        });
+
+        document.getElementById('searchPeminjaman').addEventListener('input', (e) => {
+            updatePeminjamanTable(e.target.value);
+        });
+
+        // ===== STOK OPNAME FUNCTIONS =====
+        document.getElementById('btnTambahOpname').addEventListener('click', () => {
+            document.getElementById('idOpname').value = '';
+            document.getElementById('formOpname').reset();
+            new bootstrap.Modal(document.getElementById('modalOpname')).show();
+        });
+
+        document.getElementById('btnSimpanOpname').addEventListener('click', async () => {
+            const sistem = parseInt(document.getElementById('sistemOpname').value);
+            const fisik = parseInt(document.getElementById('fisikOpname').value);
+            const selisih = fisik - sistem;
+
+            const data = {
+                type: 'opname',
+                id_opname: document.getElementById('idOpname').value || generateId('OPN'),
+                barang_opname: document.getElementById('barangOpname').value,
+                sistem: sistem,
+                fisik: fisik,
+                selisih: selisih,
+                keterangan: document.getElementById('keteranganOpname').value,
+                tanggal_opname: document.getElementById('tanggalOpname').value,
+                petugas: document.getElementById('petugasOpname').value,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalOpname')).hide();
+            }
+        });
+
+        // ===== LOG KELUAR FUNCTIONS =====
+        document.getElementById('btnTambahLogKeluar').addEventListener('click', () => {
+            document.getElementById('idKeluar').value = '';
+            document.getElementById('formLogKeluar').reset();
+            new bootstrap.Modal(document.getElementById('modalLogKeluar')).show();
+        });
+
+        document.getElementById('btnSimpanLogKeluar').addEventListener('click', async () => {
+            const data = {
+                type: 'logkeluar',
+                id_keluar: document.getElementById('idKeluar').value || generateId('OUT'),
+                barang_keluar: document.getElementById('barangKeluar').value,
+                jumlah_keluar: parseInt(document.getElementById('jumlahKeluar').value),
+                satuan: document.getElementById('satuanKeluar').value,
+                penerima: document.getElementById('penerimаKeluar').value,
+                keperluan: document.getElementById('perluanKeluar').value,
+                tanggal_keluar: document.getElementById('tanggalKeluar').value,
+                petugas_keluar: document.getElementById('petugasKeluar').value,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalLogKeluar')).hide();
+            }
+        });
+
+        // ===== INVENTARIS FUNCTIONS =====
+        document.getElementById('btnTambahInventaris').addEventListener('click', () => {
+            document.getElementById('idInventaris').value = '';
+            document.getElementById('formInventaris').reset();
+            new bootstrap.Modal(document.getElementById('modalInventaris')).show();
+        });
+
+        document.getElementById('btnSimpanInventaris').addEventListener('click', async () => {
+            const data = {
+                type: 'inventaris',
+                id_inventaris: document.getElementById('idInventaris').value || generateId('INV'),
+                barang_inventaris: document.getElementById('barangInventaris').value,
+                guru_inventaris: document.getElementById('guruInventaris').value,
+                kelas_inventaris: document.getElementById('kelasInventaris').value,
+                jumlah_inventaris: parseInt(document.getElementById('jumlahInventaris').value),
+                kondisi_inventaris: document.getElementById('kondisiInventaris').value,
+                tanggal_inventaris: document.getElementById('tanggalInventaris').value,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalInventaris')).hide();
+            }
+        });
+
+        document.getElementById('searchInventaris').addEventListener('input', (e) => {
+            updateInventarisTable(e.target.value);
+        });
+
+        // ===== USER FUNCTIONS =====
+        document.getElementById('btnTambahUser').addEventListener('click', () => {
+            document.getElementById('formUser').reset();
+            document.getElementById('usernameUser').disabled = false;
+            new bootstrap.Modal(document.getElementById('modalUser')).show();
+        });
+
+        document.getElementById('btnSimpanUser').addEventListener('click', async () => {
+            const data = {
+                type: 'user',
+                username: document.getElementById('usernameUser').value,
+                password: document.getElementById('passwordUser').value,
+                role: document.getElementById('roleUser').value,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalUser')).hide();
+                updateUserTable();
+            }
+        });
+
+        // ===== SETTINGS FUNCTIONS =====
+        document.getElementById('btnSimpanPengaturan').addEventListener('click', () => {
+            alert('Pengaturan tersimpan!');
+        });
+
+        // ===== LAPORAN FUNCTIONS =====
+        document.getElementById('btnRefreshLaporan').addEventListener('click', generateLaporan);
+        document.getElementById('filterLaporanPeriode').addEventListener('change', generateLaporan);
+        document.getElementById('filterLaporanBulan').addEventListener('change', generateLaporan);
+        document.getElementById('filterLaporanTahun').addEventListener('change', generateLaporan);
+
+        function generateLaporan() {
+            const periode = document.getElementById('filterLaporanPeriode').value;
+            const bulan = document.getElementById('filterLaporanBulan').value;
+            const tahun = document.getElementById('filterLaporanTahun').value;
+            const container = document.getElementById('laporanContainer');
+
+            let html = '';
+
+            // Filter data berdasarkan periode
+            let asetFilter = state.data.asets;
+            let bhpFilter = state.data.bhp;
+            let peminjamanFilter = state.data.peminjaman;
+            let opnameFilter = state.data.opnames;
+
+            if (periode === 'bulanan') {
+                const monthYear = tahun + '-' + bulan;
+                asetFilter = asetFilter.filter(a => a.tanggal_penerimaan?.startsWith(monthYear));
+                peminjamanFilter = peminjamanFilter.filter(p => p.tanggal_pinjam?.startsWith(monthYear));
+                opnameFilter = opnameFilter.filter(o => o.tanggal_opname?.startsWith(monthYear));
+            } else {
+                asetFilter = asetFilter.filter(a => a.tahun_anggaran == tahun);
+                peminjamanFilter = peminjamanFilter.filter(p => p.tanggal_pinjam?.startsWith(tahun));
+                opnameFilter = opnameFilter.filter(o => o.tanggal_opname?.startsWith(tahun));
+            }
+
+            // Report Aset
+            html += '<div class="laporan-section"><div class="laporan-header">📦 Laporan Aset</div>';
+            html += '<div class="card"><div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Nama</th><th>Kategori</th><th>Jumlah</th><th>Kondisi</th><th>Status</th></tr></thead><tbody>';
+            asetFilter.forEach(a => {
+                html += `<tr><td>${a.id_aset}</td><td>${a.nama_barang}</td><td>${a.kategori}</td><td>${a.jumlah}</td><td>${a.kondisi}</td><td>${a.status}</td></tr>`;
+            });
+            html += '</tbody></table></div></div></div>';
+
+            // Report BHP
+            html += '<div class="laporan-section"><div class="laporan-header">📊 Laporan Barang Habis Pakai</div>';
+            html += '<div class="card"><div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Nama</th><th>Stok</th><th>Minimal</th><th>Status</th></tr></thead><tbody>';
+            bhpFilter.forEach(b => {
+                html += `<tr><td>${b.id_bhp}</td><td>${b.nama_bhp}</td><td>${b.stok}</td><td>${b.minimal}</td><td><span class="badge ${b.status_bhp === 'Aman' ? 'badge-success' : 'badge-danger'}">${b.status_bhp}</span></td></tr>`;
+            });
+            html += '</tbody></table></div></div></div>';
+
+            // Report Peminjaman
+            html += '<div class="laporan-section"><div class="laporan-header">🤝 Laporan Peminjaman</div>';
+            html += '<div class="card"><div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Aset</th><th>Peminjam</th><th>Tanggal</th><th>Status</th></tr></thead><tbody>';
+            peminjamanFilter.forEach(p => {
+                html += `<tr><td>${p.id_log}</td><td>${p.nama_barang}</td><td>${p.nama_peminjam}</td><td>${formatDate(p.tanggal_pinjam)}</td><td><span class="badge badge-warning">${p.status_pinjam}</span></td></tr>`;
+            });
+            html += '</tbody></table></div></div></div>';
+
+            // Report Opname
+            html += '<div class="laporan-section"><div class="laporan-header">📋 Laporan Stok Opname</div>';
+            html += '<div class="card"><div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Barang</th><th>Sistem</th><th>Fisik</th><th>Selisih</th></tr></thead><tbody>';
+            opnameFilter.forEach(o => {
+                html += `<tr><td>${o.id_opname}</td><td>${o.barang_opname}</td><td>${o.sistem}</td><td>${o.fisik}</td><td>${o.selisih}</td></tr>`;
+            });
+            html += '</tbody></table></div></div></div>';
+
+            container.innerHTML = html;
+        }
+
+        document.getElementById('btnDownloadLaporanPDF').addEventListener('click', () => {
+            alert('Fitur PDF akan segera hadir!');
+        });
+
+        // ===== UPDATE TABLE FUNCTIONS =====
+        function updateAsetTable(search = '') {
+            const tbody = document.getElementById('asetTableBody');
+            let asets = state.data.asets;
+            
+            const searchVal = document.getElementById('searchAset').value.toLowerCase();
+            const kategori = document.getElementById('filterKategoriAset').value;
+            const status = document.getElementById('filterStatusAset').value;
+            const sumber = document.getElementById('filterSumberAset').value;
+            const tahun = document.getElementById('filterTahunAset').value;
+
+            asets = asets.filter(a => {
+                return (a.nama_barang?.toLowerCase().includes(searchVal) || a.id_aset?.toLowerCase().includes(searchVal)) &&
+                       (!kategori || a.kategori === kategori) &&
+                       (!status || a.status === status) &&
+                       (!sumber || a.sumber_dana === sumber) &&
+                       (!tahun || a.tahun_anggaran == tahun);
+            });
+
+            if (asets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = asets.map(aset => {
+                const actionCol = state.currentRole === 'Admin' ? `
+                    <button class="btn btn-edit">Edit</button>
+                    <button class="btn btn-delete">Hapus</button>
+                ` : '';
+                return `
+                <tr>
+                    <td>${aset.id_aset}</td>
+                    <td>${aset.nama_barang}</td>
+                    <td>${aset.sumber_dana || '-'}</td>
+                    <td>${aset.tahun_anggaran || '-'}</td>
+                    <td>${formatDate(aset.tanggal_penerimaan)}</td>
+                    <td>${aset.kategori || '-'}</td>
+                    <td>${aset.jumlah}</td>
+                    <td><span class="badge ${aset.kondisi === 'Baik' ? 'badge-success' : aset.kondisi === 'Rusak Ringan' ? 'badge-warning' : 'badge-danger'}">${aset.kondisi}</span></td>
+                    <td>${aset.status}</td>
+                    <td>${aset.lokasi_ruangan || '-'}</td>
+                    <td>${actionCol}</td>
+                </tr>
+            `}).join('');
+        }
+
+        function updateBHPTable(search = '') {
+            const tbody = document.getElementById('bhpTableBody');
+            let bhps = state.data.bhp;
+            
+            const searchVal = document.getElementById('searchBHP').value.toLowerCase();
+            const kategori = document.getElementById('filterKategoriBHP').value;
+            const statusBHP = document.getElementById('filterStatusBHP').value;
+
+            bhps = bhps.filter(b => {
+                return (b.nama_bhp?.toLowerCase().includes(searchVal) || b.id_bhp?.toLowerCase().includes(searchVal)) &&
+                       (!kategori || b.kategori === kategori) &&
+                       (!statusBHP || b.status_bhp === statusBHP);
+            });
+
+            if (bhps.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = bhps.map(bhp => {
+                const actionCol = state.currentRole === 'Admin' ? `
+                    <button class="btn btn-edit">Edit</button>
+                    <button class="btn btn-delete">Hapus</button>
+                ` : '';
+                return `
+                <tr>
+                    <td>${bhp.id_bhp}</td>
+                    <td>${bhp.nama_bhp}</td>
+                    <td>${bhp.kategori}</td>
+                    <td>${bhp.stok}</td>
+                    <td>${bhp.satuan}</td>
+                    <td>${bhp.minimal}</td>
+                    <td><span class="badge ${bhp.status_bhp === 'Aman' ? 'badge-success' : 'badge-danger'}">${bhp.status_bhp}</span></td>
+                    <td>${actionCol}</td>
+                </tr>
+            `}).join('');
+        }
+
+        function updatePeminjamanTable(search = '') {
+            const tbody = document.getElementById('peminjamanTableBody');
+            let peminjamans = state.data.peminjaman;
+            
+            const searchVal = document.getElementById('searchPeminjaman').value.toLowerCase();
+
+            peminjamans = peminjamans.filter(p => {
+                return p.nama_barang?.toLowerCase().includes(searchVal) || 
+                       p.nama_peminjam?.toLowerCase().includes(searchVal) ||
+                       p.id_log?.toLowerCase().includes(searchVal);
+            });
+
+            if (peminjamans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = peminjamans.map(p => {
+                const actionCol = state.currentRole === 'Admin' ? `
+                    <button class="btn btn-edit">Kembalikan</button>
+                    <button class="btn btn-edit">PDF</button>
+                ` : '';
+                return `
+                <tr>
+                    <td>${p.id_log}</td>
+                    <td>${p.nama_barang}</td>
+                    <td>${p.nama_peminjam}</td>
+                    <td>${formatDate(p.tanggal_pinjam)}</td>
+                    <td>${formatDate(p.tanggal_kembali)}</td>
+                    <td><span class="badge ${p.status_pinjam === 'Aktif' ? 'badge-warning' : 'badge-success'}">${p.status_pinjam}</span></td>
+                    <td>${actionCol}</td>
+                </tr>
+            `}).join('');
+        }
+
+        function updateOpnameTable() {
+            const tbody = document.getElementById('opnameTableBody');
+            if (state.data.opnames.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = state.data.opnames.map(o => `
+                <tr>
+                    <td>${o.id_opname}</td>
+                    <td>${o.barang_opname}</td>
+                    <td>${o.sistem}</td>
+                    <td>${o.fisik}</td>
+                    <td>${o.selisih}</td>
+                    <td>${o.keterangan}</td>
+                    <td>${formatDate(o.tanggal_opname)}</td>
+                    <td>${o.petugas}</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateKeluarTable() {
+            const tbody = document.getElementById('keluarTableBody');
+            if (state.data.keluar.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = state.data.keluar.map(k => {
+                const actionCol = state.currentRole === 'Admin' ? `<button class="btn btn-edit">Print</button>` : '';
+                return `
+                <tr>
+                    <td>${k.id_keluar}</td>
+                    <td>${k.barang_keluar}</td>
+                    <td>${k.jumlah_keluar}</td>
+                    <td>${k.satuan}</td>
+                    <td>${k.penerima}</td>
+                    <td>${k.keperluan}</td>
+                    <td>${formatDate(k.tanggal_keluar)}</td>
+                    <td>${k.petugas_keluar}</td>
+                    <td>${actionCol}</td>
+                </tr>
+            `}).join('');
+        }
+
+        function updateInventarisTable(search = '') {
+            const tbody = document.getElementById('inventarisTableBody');
+            let inventaris = state.data.inventaris;
+            
+            const searchVal = (search || document.getElementById('searchInventaris').value).toLowerCase();
+
+            inventaris = inventaris.filter(i => {
+                return i.barang_inventaris?.toLowerCase().includes(searchVal) || 
+                       i.guru_inventaris?.toLowerCase().includes(searchVal) ||
+                       i.id_inventaris?.toLowerCase().includes(searchVal);
+            });
+
+            if (inventaris.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = inventaris.map(i => `
+                <tr>
+                    <td>${i.id_inventaris}</td>
+                    <td>${i.barang_inventaris}</td>
+                    <td>${i.guru_inventaris}</td>
+                    <td>${i.kelas_inventaris || '-'}</td>
+                    <td>${i.jumlah_inventaris}</td>
+                    <td><span class="badge ${i.kondisi_inventaris === 'Baik' ? 'badge-success' : i.kondisi_inventaris === 'Rusak Ringan' ? 'badge-warning' : 'badge-danger'}">${i.kondisi_inventaris}</span></td>
+                    <td>${formatDate(i.tanggal_inventaris)}</td>
+                    <td>
+                        <button class="btn btn-edit">Edit</button>
+                        <button class="btn btn-delete">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            if (state.data.users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; font-size: 12px;">Tidak ada user</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = state.data.users.map(u => `
+                <tr>
+                    <td>${u.username}</td>
+                    <td><span class="role-badge role-${u.role.toLowerCase()}">${u.role}</span></td>
+                    <td>
+                        <button class="btn btn-edit">Edit</button>
+                        <button class="btn btn-delete">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateDashboard() {
+            document.getElementById('totalAset').textContent = state.data.asets.length;
+            document.getElementById('totalBHP').textContent = state.data.bhp.length;
+            
+            const dipinjam = state.data.peminjaman.filter(p => p.status_pinjam === 'Aktif').length;
+            document.getElementById('totalDipinjam').textContent = dipinjam;
+
+            const stokKritis = state.data.bhp.filter(b => b.status_bhp === 'Kritis').length;
+            document.getElementById('stokKritis').textContent = stokKritis;
+
+            // Populate filter dropdowns
+            const tahunSet = new Set();
+            const sumberSet = new Set();
+            state.data.asets.forEach(a => {
+                if (a.tahun_anggaran) tahunSet.add(a.tahun_anggaran);
+                if (a.sumber_dana) sumberSet.add(a.sumber_dana);
+            });
+
+            const tahunSelect = document.getElementById('filterTahunAset');
+            const currentTahun = tahunSelect.value;
+            tahunSelect.innerHTML = '<option value="">Tahun</option>';
+            Array.from(tahunSet).sort().reverse().forEach(t => {
+                tahunSelect.innerHTML += `<option value="${t}">${t}</option>`;
+            });
+            tahunSelect.value = currentTahun;
+
+            const sumberSelect = document.getElementById('filterSumberAset');
+            const currentSumber = sumberSelect.value;
+            sumberSelect.innerHTML = '<option value="">Sumber Dana</option>';
+            Array.from(sumberSet).forEach(s => {
+                sumberSelect.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+            sumberSelect.value = currentSumber;
+
+            updateCharts();
+        }
+
+        function updateCharts() {
+            const kondisiCount = {
+                'Baik': state.data.asets.filter(a => a.kondisi === 'Baik').length,
+                'Rusak Ringan': state.data.asets.filter(a => a.kondisi === 'Rusak Ringan').length,
+                'Rusak Berat': state.data.asets.filter(a => a.kondisi === 'Rusak Berat').length
+            };
+
+            const kondisiCanvas = document.getElementById('kondisiChart');
+            if (state.charts.kondisi) {
+                state.charts.kondisi.data.datasets[0].data = [kondisiCount['Baik'], kondisiCount['Rusak Ringan'], kondisiCount['Rusak Berat']];
+                state.charts.kondisi.update();
+            } else if (kondisiCanvas) {
+                state.charts.kondisi = new Chart(kondisiCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Baik', 'Rusak Ringan', 'Rusak Berat'],
+                        datasets: [{
+                            data: [kondisiCount['Baik'], kondisiCount['Rusak Ringan'], kondisiCount['Rusak Berat']],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            const trenCanvas = document.getElementById('trenChart');
+            if (trenCanvas) {
+                if (state.charts.tren) {
+                    state.charts.tren.destroy();
+                }
+                state.charts.tren = new Chart(trenCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                        datasets: [{
+                            label: 'Konsumsi ATK',
+                            data: [65, 59, 80, 81, 56, 55],
+                            backgroundColor: '#2563eb'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+
+        function updateAllUI() {
+            updateAsetTable();
+            updateBHPTable();
+            updatePeminjamanTable();
+            updateOpnameTable();
+            updateKeluarTable();
+            updateInventarisTable();
+            updateUserTable();
+            updateDashboard();
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            lucide.createIcons();
+        });
+    </script>
+  <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --card-shadow-hover: 0 20px 25px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.05);
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0;
+        }
+
+        /* Login Page */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: white;
+            padding: 40px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        body.dark-mode .login-card {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        body.dark-mode .login-title {
+            color: #60a5fa;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        body.dark-mode .login-subtitle {
+            color: #94a3b8;
+        }
+
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        body.dark-mode .form-control {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Main Layout */
+        .app-wrapper {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .sidebar {
+            background: #1e293b;
+            border-right-color: #334155;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        body.dark-mode .sidebar-header {
+            border-bottom-color: #334155;
+        }
+
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        body.dark-mode .sidebar-title {
+            color: #e2e8f0;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: #f1f5f9;
+            color: var(--primary-color);
+        }
+
+        body.dark-mode .nav-item:hover {
+            background: #334155;
+            color: #60a5fa;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(30, 64, 175, 0.1) 100%);
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 12px;
+        }
+
+        body.dark-mode .nav-item.active {
+            background: rgba(96, 165, 250, 0.1);
+            color: #60a5fa;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+            gap: 20px;
+        }
+
+        body.dark-mode .topbar {
+            background: #1e293b;
+            border-bottom-color: #334155;
+        }
+
+        .topbar-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        body.dark-mode .page-title {
+            color: #e2e8f0;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: #f1f5f9;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: #e2e8f0;
+            color: var(--primary-color);
+        }
+
+        body.dark-mode .icon-btn {
+            background: #334155;
+            color: #94a3b8;
+        }
+
+        body.dark-mode .icon-btn:hover {
+            background: #475569;
+            color: #60a5fa;
+        }
+
+        .page-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            background: white;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .card:hover {
+            box-shadow: var(--card-shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode .card {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        body.dark-mode .card-header {
+            border-bottom-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-mode .stat-card {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: var(--primary-color);
+            opacity: 0.08;
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        body.dark-mode .stat-label {
+            color: #94a3b8;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        body.dark-mode .stat-value {
+            color: #60a5fa;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            color: var(--success-color);
+            margin-top: 8px;
+        }
+
+        /* Tables */
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            border: none;
+            color: #475569;
+            font-weight: 600;
+            padding: 16px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        body.dark-mode .table thead th {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        .table tbody td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+        }
+
+        body.dark-mode .table tbody td {
+            border-bottom-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        body.dark-mode .table tbody tr:hover {
+            background: #334155;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .btn-secondary:hover {
+            background: #475569;
+            color: #e2e8f0;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        /* Modal */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            background: white;
+        }
+
+        body.dark-mode .modal-content {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px;
+        }
+
+        body.dark-mode .modal-header {
+            border-bottom-color: #334155;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        body.dark-mode .modal-title {
+            color: #e2e8f0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        body.dark-mode .form-label {
+            color: #cbd5e1;
+        }
+
+        /* Search Bar */
+        .search-box {
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        body.dark-mode .search-box input {
+            background: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        /* Badge */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        body.dark-mode .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        body.dark-mode .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        body.dark-mode .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+                padding: 15px;
+            }
+
+            .page-content {
+                padding: 15px;
+            }
+
+            .topbar {
+                padding: 15px;
+                height: auto;
+                flex-wrap: wrap;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .table {
+                font-size: 12px;
+            }
+
+            .table thead th,
+            .table tbody td {
+                padding: 12px;
+            }
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(37, 99, 235, 0.1);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        /* Role Badge */
+        .role-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-admin {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        body.dark-mode .role-admin {
+            background: rgba(37, 99, 235, 0.2);
+            color: #93c5fd;
+        }
+
+        .role-guru {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        body.dark-mode .role-guru {
+            background: rgba(16, 185, 129, 0.2);
+            color: #86efac;
+        }
+
+        .form-divider {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        body.dark-mode .form-divider {
+            border-top-color: #334155;
+        }
+
+        .color-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            display: inline-block;
+        }
+    </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+  <div id="app" class="app-wrapper hidden"><!-- Sidebar Navigation -->
+   <div class="sidebar">
+    <div class="sidebar-header">
+     <div class="sidebar-logo">
+      SP
+     </div>
+     <div class="sidebar-title">
+      SARPRAS
+     </div>
+    </div>
+    <nav class="nav-menu" id="mainMenu">
+     <div class="nav-item active" data-menu="dashboard"><i data-lucide="home" style="width: 20px; height: 20px;"></i> <span>Dashboard</span>
+     </div>
+     <div class="nav-item" data-menu="aset"><i data-lucide="package" style="width: 20px; height: 20px;"></i> <span>Aset</span>
+     </div>
+     <div class="nav-item" data-menu="bhp"><i data-lucide="boxes" style="width: 20px; height: 20px;"></i> <span>Barang Habis Pakai</span>
+     </div>
+     <div class="nav-item" data-menu="peminjaman"><i data-lucide="hand-helping" style="width: 20px; height: 20px;"></i> <span>Peminjaman</span>
+     </div>
+     <div class="nav-item" data-menu="stok-opname"><i data-lucide="clipboard-list" style="width: 20px; height: 20px;"></i> <span>Stok Opname</span>
+     </div>
+     <div class="nav-item" data-menu="log-keluar"><i data-lucide="log-out" style="width: 20px; height: 20px;"></i> <span>Log Stok Keluar</span>
+     </div>
+     <div class="nav-item admin-only" data-menu="inventaris"><i data-lucide="book" style="width: 20px; height: 20px;"></i> <span>Inventaris</span>
+     </div>
+     <div class="nav-item admin-only" data-menu="laporan"><i data-lucide="file-text" style="width: 20px; height: 20px;"></i> <span>Rekap Laporan</span>
+     </div>
+     <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+     <div class="nav-item admin-only" data-menu="settings"><i data-lucide="settings" style="width: 20px; height: 20px;"></i> <span>Pengaturan</span>
+     </div>
+     <div class="nav-item" id="logoutBtn" style="margin-top: 10px;"><i data-lucide="log-out" style="width: 20px; height: 20px;"></i> <span>Logout</span>
+     </div>
+    </nav>
+   </div><!-- Main Content -->
+   <div class="content-area"><!-- Top Bar -->
+    <div class="topbar">
+     <div class="topbar-left">
+      <h2 class="page-title" id="pageTitle">Dashboard</h2>
+     </div>
+     <div class="topbar-right"><button class="icon-btn" id="themeToggle" title="Toggle Theme"> <i data-lucide="moon" style="width: 20px; height: 20px;"></i> </button>
+      <div style="display: flex; align-items: center; gap: 8px;">
+       <div style="text-align: right;">
+        <div style="font-weight: 600; color: #1e293b; font-size: 14px;" id="userDisplay">
+         Admin
+        </div>
+        <div style="font-size: 12px; color: #64748b;" id="roleDisplay">
+         Administrator
+        </div>
+       </div>
+       <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px;" id="userAvatar">
+        A
+       </div>
+      </div>
+     </div>
+    </div><!-- Page Content -->
+    <div class="page-content"><!-- Dashboard Page -->
+     <div id="dashboard-page" class="page-section">
+      <div class="row mb-4">
+       <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+         <div class="stat-label">
+          Total Aset
+         </div>
+         <div class="stat-value" id="totalAset">
+          0
+         </div>
+         <div class="stat-change">
+          ↑ 12% dari bulan lalu
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+         <div class="stat-label">
+          BHP Items
+         </div>
+         <div class="stat-value" id="totalBHP">
+          0
+         </div>
+         <div class="stat-change">
+          ↑ 5% dari bulan lalu
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+         <div class="stat-label">
+          Sedang Dipinjam
+         </div>
+         <div class="stat-value" id="totalDipinjam">
+          0
+         </div>
+         <div class="stat-change">
+          ↑ 8% dari bulan lalu
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+         <div class="stat-label">
+          Stok Kritis
+         </div>
+         <div class="stat-value" id="stokKritis">
+          0
+         </div>
+         <div class="stat-change">
+          ↑ 3% dari bulan lalu
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="row">
+       <div class="col-lg-6">
+        <div class="card">
+         <div class="card-header">
+          Kondisi Aset
+         </div>
+         <div class="card-body">
+          <div class="chart-container">
+           <canvas id="kondisiChart"></canvas>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-6">
+        <div class="card">
+         <div class="card-header">
+          Tren Konsumsi ATK
+         </div>
+         <div class="card-body">
+          <div style="margin-bottom: 15px;"><button class="btn btn-sm" style="background: var(--primary-color); color: white; margin-right: 5px;" id="btnBulan">Bulanan</button> <button class="btn btn-sm btn-secondary" id="btnTahunan">Tahunan</button>
+          </div>
+          <div class="chart-container">
+           <canvas id="trenChart"></canvas>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Aset Page -->
+     <div id="aset-page" class="page-section hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+       <div class="search-box"><i data-lucide="search"></i> <input type="text" placeholder="Cari Aset..." id="searchAset">
+       </div><button class="btn btn-primary" id="btnTambahAset"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah Aset </button>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Nama Aset</th>
+           <th>Sumber Dana</th>
+           <th>Tahun Anggaran</th>
+           <th>Tanggal Penerimaan</th>
+           <th>Kategori</th>
+           <th>Jumlah</th>
+           <th>Kondisi</th>
+           <th>Status</th>
+           <th>Lokasi</th>
+           <th>Aksi</th>
+          </tr>
+         </thead>
+         <tbody id="asetTableBody">
+          <tr>
+           <td colspan="11" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- BHP Page -->
+     <div id="bhp-page" class="page-section hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+       <div class="search-box"><i data-lucide="search"></i> <input type="text" placeholder="Cari Barang..." id="searchBHP">
+       </div><button class="btn btn-primary" id="btnTambahBHP"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah Barang </button>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Nama Barang</th>
+           <th>Kategori</th>
+           <th>Stok</th>
+           <th>Satuan</th>
+           <th>Minimal</th>
+           <th>Status</th>
+           <th>Aksi</th>
+          </tr>
+         </thead>
+         <tbody id="bhpTableBody">
+          <tr>
+           <td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Peminjaman Page -->
+     <div id="peminjaman-page" class="page-section hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+       <div class="search-box"><i data-lucide="search"></i> <input type="text" placeholder="Cari Peminjaman..." id="searchPeminjaman">
+       </div><button class="btn btn-primary" id="btnTambahPeminjaman"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah Peminjaman </button>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Aset</th>
+           <th>Peminjam</th>
+           <th>Tgl Pinjam</th>
+           <th>Tgl Kembali</th>
+           <th>Status</th>
+           <th>Aksi</th>
+          </tr>
+         </thead>
+         <tbody id="peminjamanTableBody">
+          <tr>
+           <td colspan="7" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Stok Opname Page -->
+     <div id="stok-opname-page" class="page-section hidden">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;"><button class="btn btn-primary" id="btnTambahOpname"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah Stok Opname </button>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Barang</th>
+           <th>Sistem</th>
+           <th>Fisik</th>
+           <th>Selisih</th>
+           <th>Keterangan</th>
+           <th>Tanggal</th>
+           <th>Petugas</th>
+          </tr>
+         </thead>
+         <tbody id="opnameTableBody">
+          <tr>
+           <td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Log Keluar Page -->
+     <div id="log-keluar-page" class="page-section hidden">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;"><button class="btn btn-primary" id="btnTambahLogKeluar"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah Log Keluar </button>
+      </div>
+      <div class="card">
+       <div class="table-responsive">
+        <table class="table">
+         <thead>
+          <tr>
+           <th>ID</th>
+           <th>Barang</th>
+           <th>Jumlah</th>
+           <th>Satuan</th>
+           <th>Penerima</th>
+           <th>Keperluan</th>
+           <th>Tanggal</th>
+           <th>Petugas</th>
+           <th>Aksi</th>
+          </tr>
+         </thead>
+         <tbody id="keluarTableBody">
+          <tr>
+           <td colspan="9" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Settings Page -->
+     <div id="settings-page" class="page-section hidden">
+      <div class="row">
+       <div class="col-lg-8">
+        <div class="card">
+         <div class="card-header">
+          Pengaturan Tema
+         </div>
+         <div class="card-body">
+          <div class="mb-3"><label class="form-label">Warna Utama</label>
+           <div style="display: flex; gap: 10px;"><input type="color" id="primaryColor" class="form-control" style="width: 100px; cursor: pointer;"> <input type="text" id="primaryColorText" class="form-control" readonly style="flex: 1;">
+           </div>
+          </div>
+          <div class="mb-3"><label class="form-label">Warna Sekunder</label>
+           <div style="display: flex; gap: 10px;"><input type="color" id="secondaryColor" class="form-control" style="width: 100px; cursor: pointer;"> <input type="text" id="secondaryColorText" class="form-control" readonly style="flex: 1;">
+           </div>
+          </div>
+          <hr class="form-divider">
+          <div class="mb-3"><label class="form-label">URL Logo Google Drive</label> <small style="display: block; margin-bottom: 10px; color: #64748b;">Konversi Link: Ganti /file/d/{ID}/view menjadi /uc?id={ID}&amp;export=download</small> <input type="text" id="logoUrl" class="form-control" placeholder="Paste URL Google Drive...">
+          </div>
+          <div class="mb-3"><label class="form-label">Live Preview Logo</label>
+           <div style="width: 100px; height: 100px; border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center;"><img id="logoPreview" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+           </div>
+          </div><button class="btn btn-primary" id="btnSimpanPengaturan">Simpan Pengaturan</button>
+         </div>
+        </div>
+       </div>
+       <div class="col-lg-4">
+        <div class="card">
+         <div class="card-header">
+          Kelola User
+         </div>
+         <div class="card-body"><button class="btn btn-primary w-100 mb-3" id="btnTambahUser"> <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 5px;"></i> Tambah User </button>
+          <div style="max-height: 500px; overflow-y: auto;">
+           <table class="table table-sm">
+            <thead>
+             <tr>
+              <th style="font-size: 12px;">Username</th>
+              <th style="font-size: 12px;">Role</th>
+              <th style="font-size: 12px;">Aksi</th>
+             </tr>
+            </thead>
+            <tbody id="userTableBody">
+             <tr>
+              <td colspan="3" style="text-align: center; font-size: 12px;">Tidak ada user</td>
+             </tr>
+            </tbody>
+           </table>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Login Page -->
+  <div id="login-page" class="login-container">
+   <div class="login-card">
+    <div class="login-title">
+     SARPRAS
+    </div>
+    <div class="login-subtitle">
+     Sistem Pembukuan SD Negeri Babakan 04
+    </div>
+    <form id="loginForm" style="display: flex; flex-direction: column; gap: 15px;">
+     <div><label class="form-label">Username</label> <input type="text" id="username" class="form-control" placeholder="Masukkan username..." required>
+     </div>
+     <div><label class="form-label">Password</label> <input type="password" id="password" class="form-control" placeholder="Masukkan password..." required>
+     </div><button type="submit" class="login-btn">Masuk</button>
+    </form>
+    <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #64748b;">
+     <p>Demo: Username: <strong>admin</strong> | Password: <strong>admin123</strong></p>
+     <p>Demo: Username: <strong>guru</strong> | Password: <strong>guru123</strong></p>
+    </div>
+   </div>
+  </div><!-- Modal Tambah Aset -->
+  <div class="modal fade" id="modalAset" tabindex="-1">
+   <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah/Edit Aset</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formAset">
+       <div class="mb-3"><label class="form-label">ID Aset</label> <input type="text" id="idAset" class="form-control" readonly>
+       </div>
+       <div class="mb-3"><label class="form-label">Nama Aset</label> <input type="text" id="namaAset" class="form-control" required>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Sumber Dana</label> <input type="text" id="sumberDana" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Tahun Anggaran</label> <input type="number" id="tahunAnggaran" class="form-control">
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Tanggal Penerimaan</label> <input type="date" id="tanggalPenerimaan" class="form-control">
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Kategori</label> <select id="kategoriaset" class="form-control"> <option value="">Pilih Kategori</option> <option value="Elektronik">Elektronik</option> <option value="Mebel">Mebel</option> <option value="Dokumen">Dokumen</option> </select>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Jumlah</label> <input type="number" id="jumlahAset" class="form-control" required>
+        </div>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Kondisi</label> <select id="kondisiAset" class="form-control"> <option value="">Pilih Kondisi</option> <option value="Baik">Baik</option> <option value="Rusak Ringan">Rusak Ringan</option> <option value="Rusak Berat">Rusak Berat</option> </select>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Status</label> <select id="statusAset" class="form-control"> <option value="">Pilih Status</option> <option value="Tersedia">Tersedia</option> <option value="Dipinjam">Dipinjam</option> <option value="Perbaikan">Perbaikan</option> </select>
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Lokasi Ruangan</label> <input type="text" id="lokasiAset" class="form-control">
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanAset">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah BHP -->
+  <div class="modal fade" id="modalBHP" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah/Edit Barang Habis Pakai</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formBHP">
+       <div class="mb-3"><label class="form-label">ID Barang</label> <input type="text" id="idBHP" class="form-control" readonly>
+       </div>
+       <div class="mb-3"><label class="form-label">Nama Barang</label> <input type="text" id="namaBHP" class="form-control" required>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Kategori</label> <select id="kategoriBHP" class="form-control"> <option value="">Pilih Kategori</option> <option value="ATK">ATK</option> <option value="Kebersihan">Kebersihan</option> <option value="Elektronik">Elektronik</option> </select>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Stok</label> <input type="number" id="stokBHP" class="form-control" required>
+        </div>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Satuan</label> <select id="satuanBHP" class="form-control"> <option value="">Pilih Satuan</option> <option value="Rim">Rim</option> <option value="Pcs">Pcs</option> <option value="Buah">Buah</option> <option value="Meter">Meter</option> </select>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Minimal</label> <input type="number" id="minimalBHP" class="form-control">
+        </div>
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanBHP">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah Peminjaman -->
+  <div class="modal fade" id="modalPeminjaman" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah Peminjaman</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formPeminjaman">
+       <div class="mb-3"><label class="form-label">Pilih Aset</label> <select id="asetSelect" class="form-control" required> <option value="">Pilih Aset</option> </select>
+       </div>
+       <div class="mb-3"><label class="form-label">Tipe Peminjam</label> <select id="tipePeminjam" class="form-control" required> <option value="">Pilih Tipe</option> <option value="Guru">Guru</option> <option value="Admin">Admin</option> <option value="Staff">Staff</option> <option value="Siswa">Siswa</option> </select>
+       </div>
+       <div id="peminjamContainer">
+        <div class="mb-3"><label class="form-label">Nama Peminjam</label> <select id="namaPeminjam" class="form-control" required> <option value="">Pilih Nama</option> </select>
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Tanggal Pinjam</label> <input type="date" id="tglPinjam" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Tanggal Kembali (Perkiraan)</label> <input type="date" id="tglKembali" class="form-control">
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanPeminjaman">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah Stok Opname -->
+  <div class="modal fade" id="modalOpname" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah Stok Opname</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formOpname">
+       <div class="mb-3"><label class="form-label">ID</label> <input type="text" id="idOpname" class="form-control" readonly>
+       </div>
+       <div class="mb-3"><label class="form-label">Barang</label> <input type="text" id="barangOpname" class="form-control" required>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Sistem (Qty)</label> <input type="number" id="sistemOpname" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Fisik (Qty)</label> <input type="number" id="fisikOpname" class="form-control" required>
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Keterangan</label> <textarea id="keteranganOpname" class="form-control" rows="3"></textarea>
+       </div>
+       <div class="mb-3"><label class="form-label">Tanggal</label> <input type="date" id="tanggalOpname" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Petugas</label> <input type="text" id="petugasOpname" class="form-control">
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanOpname">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah Log Keluar -->
+  <div class="modal fade" id="modalLogKeluar" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah Log Stok Keluar</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formLogKeluar">
+       <div class="mb-3"><label class="form-label">ID</label> <input type="text" id="idKeluar" class="form-control" readonly>
+       </div>
+       <div class="mb-3"><label class="form-label">Barang</label> <input type="text" id="barangKeluar" class="form-control" required>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Jumlah</label> <input type="number" id="jumlahKeluar" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Satuan</label> <select id="satuanKeluar" class="form-control"> <option value="Pcs">Pcs</option> <option value="Rim">Rim</option> <option value="Buah">Buah</option> <option value="Meter">Meter</option> </select>
+        </div>
+       </div>
+       <div class="mb-3"><label class="form-label">Penerima</label> <input type="text" id="penerimаKeluar" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Keperluan</label> <textarea id="perluanKeluar" class="form-control" rows="3"></textarea>
+       </div>
+       <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Tanggal</label> <input type="date" id="tanggalKeluar" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-3"><label class="form-label">Petugas</label> <input type="text" id="petugasKeluar" class="form-control">
+        </div>
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanLogKeluar">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal Tambah User -->
+  <div class="modal fade" id="modalUser" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title">Tambah/Edit User</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <form id="formUser">
+       <div class="mb-3"><label class="form-label">Username</label> <input type="text" id="usernameUser" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Password</label> <input type="password" id="passwordUser" class="form-control" required>
+       </div>
+       <div class="mb-3"><label class="form-label">Role</label> <select id="roleUser" class="form-control" required> <option value="">Pilih Role</option> <option value="Admin">Admin</option> <option value="Guru">Guru</option> </select>
+       </div>
+      </form>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn btn-primary" id="btnSimpanUser">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+        // Global State
+        const state = {
+            currentUser: null,
+            currentRole: null,
+            darkMode: false,
+            data: {
+                users: [],
+                asets: [],
+                bhp: [],
+                peminjaman: [],
+                opnames: [],
+                keluar: []
+            },
+            charts: {},
+            editingId: null
+        };
+
+        // Initialize SDK
+        window.elementSdk.init({
+            defaultConfig: {
+                app_title: "SISTEM PEMBUKUAN SD NEGERI BABAKAN 04",
+                school_name: "SD Negeri Babakan 04"
+            },
+            onConfigChange: async (config) => {
+                // Config updates handled
+            },
+            mapToCapabilities: (config) => ({
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            }),
+            mapToEditPanelValues: (config) => new Map([
+                ["app_title", config.app_title],
+                ["school_name", config.school_name]
+            ])
+        });
+
+        // Data SDK Handler
+        const dataHandler = {
+            onDataChanged(data) {
+                if (!data || data.length === 0) return;
+                
+                state.data.users = data.filter(d => d.type === 'user');
+                state.data.asets = data.filter(d => d.type === 'aset');
+                state.data.bhp = data.filter(d => d.type === 'bhp');
+                state.data.peminjaman = data.filter(d => d.type === 'peminjaman');
+                state.data.opnames = data.filter(d => d.type === 'opname');
+                state.data.keluar = data.filter(d => d.type === 'logkeluar');
+
+                updateAllUI();
+            }
+        };
+
+        // Initialize Data SDK
+        (async () => {
+            const result = await window.dataSdk.init(dataHandler);
+            if (!result.isOk) {
+                console.error('Data SDK init failed');
+            }
+        })();
+
+        // Helper: Generate ID
+        function generateId(prefix) {
+            return `${prefix}-${Date.now()}`;
+        }
+
+        // Helper: Format Date
+        function formatDate(date) {
+            if (!date) return '-';
+            return new Date(date).toLocaleDateString('id-ID');
+        }
+
+        // Theme Toggle
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            state.darkMode = !state.darkMode;
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('themeToggle').querySelector('i').setAttribute('data-lucide', state.darkMode ? 'sun' : 'moon');
+            lucide.createIcons();
+        });
+
+        // Login Handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Demo credentials
+            if ((username === 'admin' && password === 'admin123') || 
+                (username === 'guru' && password === 'guru123')) {
+                state.currentUser = username;
+                state.currentRole = username === 'admin' ? 'Admin' : 'Guru';
+                
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                document.getElementById('userDisplay').textContent = username;
+                document.getElementById('roleDisplay').textContent = state.currentRole;
+                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+
+                lucide.createIcons();
+                updateAllUI();
+            } else {
+                alert('Username atau password salah!');
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            state.currentUser = null;
+            state.currentRole = null;
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        });
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            if (item.id !== 'logoutBtn') {
+                item.addEventListener('click', () => {
+                    const menu = item.dataset.menu;
+                    if (!menu) return;
+
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+
+                    document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+                    document.getElementById(`${menu}-page`).classList.remove('hidden');
+
+                    const titles = {
+                        dashboard: 'Dashboard',
+                        aset: 'Data Aset',
+                        bhp: 'Barang Habis Pakai',
+                        peminjaman: 'Peminjaman Aset',
+                        'stok-opname': 'Stok Opname',
+                        'log-keluar': 'Log Stok Keluar',
+                        settings: 'Pengaturan'
+                    };
+                    document.getElementById('pageTitle').textContent = titles[menu];
+
+                    if (menu === 'dashboard') {
+                        setTimeout(() => {
+                            updateCharts();
+                        }, 100);
+                    }
+                });
+            }
+        });
+
+        // Add Aset Button
+        document.getElementById('btnTambahAset').addEventListener('click', () => {
+            state.editingId = null;
+            document.getElementById('idAset').value = generateId('AST');
+            document.getElementById('formAset').reset();
+            new bootstrap.Modal(document.getElementById('modalAset')).show();
+        });
+
+        // Save Aset
+        document.getElementById('btnSimpanAset').addEventListener('click', async () => {
+            const data = {
+                type: 'aset',
+                id_aset: document.getElementById('idAset').value,
+                nama_barang: document.getElementById('namaAset').value,
+                sumber_dana: document.getElementById('sumberDana').value,
+                tahun_anggaran: document.getElementById('tahunAnggaran').value,
+                tanggal_penerimaan: document.getElementById('tanggalPenerimaan').value,
+                kategori: document.getElementById('kategoriaset').value,
+                jumlah: parseInt(document.getElementById('jumlahAset').value),
+                kondisi: document.getElementById('kondisiAset').value,
+                status: document.getElementById('statusAset').value,
+                lokasi_ruangan: document.getElementById('lokasiAset').value,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalAset')).hide();
+                document.getElementById('formAset').reset();
+            }
+        });
+
+        // Add BHP Button
+        document.getElementById('btnTambahBHP').addEventListener('click', () => {
+            state.editingId = null;
+            document.getElementById('idBHP').value = generateId('BHP');
+            document.getElementById('formBHP').reset();
+            new bootstrap.Modal(document.getElementById('modalBHP')).show();
+        });
+
+        // Save BHP
+        document.getElementById('btnSimpanBHP').addEventListener('click', async () => {
+            const stok = parseInt(document.getElementById('stokBHP').value);
+            const minimal = parseInt(document.getElementById('minimalBHP').value);
+            const statusBHP = stok <= minimal ? 'Kritis' : 'Aman';
+
+            const data = {
+                type: 'bhp',
+                id_bhp: document.getElementById('idBHP').value,
+                nama_bhp: document.getElementById('namaBHP').value,
+                kategori: document.getElementById('kategoriBHP').value,
+                stok: stok,
+                satuan: document.getElementById('satuanBHP').value,
+                minimal: minimal,
+                status_bhp: statusBHP,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalBHP')).hide();
+                document.getElementById('formBHP').reset();
+            }
+        });
+
+        // Add Peminjaman Button
+        document.getElementById('btnTambahPeminjaman').addEventListener('click', () => {
+            const asetSelect = document.getElementById('asetSelect');
+            asetSelect.innerHTML = '<option value="">Pilih Aset</option>';
+            state.data.asets.forEach(aset => {
+                if (aset.status === 'Tersedia') {
+                    asetSelect.innerHTML += `<option value="${aset.id_aset}">${aset.nama_barang}</option>`;
+                }
+            });
+
+            document.getElementById('formPeminjaman').reset();
+            new bootstrap.Modal(document.getElementById('modalPeminjaman')).show();
+        });
+
+        // Handle Tipe Peminjam Change
+        document.getElementById('tipePeminjam').addEventListener('change', (e) => {
+            const container = document.getElementById('peminjamContainer');
+            if (e.target.value === 'Siswa') {
+                container.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label">Nama Siswa</label>
+                        <input type="text" id="namaSiswa" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kelas</label>
+                        <input type="text" id="kelasSiswa" class="form-control" required>
+                    </div>
+                `;
+            } else {
+                const nama = document.getElementById('namaPeminjam');
+                nama.innerHTML = '<option value="">Pilih Nama</option>';
+                state.data.users.filter(u => u.role === e.target.value).forEach(user => {
+                    nama.innerHTML += `<option value="${user.username}">${user.username}</option>`;
+                });
+                container.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label">Nama Peminjam</label>
+                        <select id="namaPeminjam" class="form-control" required>
+                            <option value="">Pilih Nama</option>
+                        </select>
+                    </div>
+                `;
+                state.data.users.filter(u => u.role === e.target.value).forEach(user => {
+                    document.getElementById('namaPeminjam').innerHTML += `<option value="${user.username}">${user.username}</option>`;
+                });
+            }
+        });
+
+        // Save Peminjaman
+        document.getElementById('btnSimpanPeminjaman').addEventListener('click', async () => {
+            const tipePeminjam = document.getElementById('tipePeminjam').value;
+            let namaPeminjam;
+            let kelasPeminjam = '';
+
+            if (tipePeminjam === 'Siswa') {
+                namaPeminjam = document.getElementById('namaSiswa').value;
+                kelasPeminjam = document.getElementById('kelasSiswa').value;
+            } else {
+                namaPeminjam = document.getElementById('namaPeminjam').value;
+            }
+
+            const idAset = document.getElementById('asetSelect').value;
+            const aset = state.data.asets.find(a => a.id_aset === idAset);
+
+            const data = {
+                type: 'peminjaman',
+                id_log: generateId('LOG'),
+                id_aset_log: idAset,
+                nama_barang: aset?.nama_barang || '',
+                nama_peminjam: namaPeminjam,
+                tipe_peminjam: tipePeminjam,
+                kelas_peminjam: kelasPeminjam,
+                tanggal_pinjam: document.getElementById('tglPinjam').value,
+                tanggal_kembali: document.getElementById('tglKembali').value,
+                status_pinjam: 'Aktif',
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalPeminjaman')).hide();
+            }
+        });
+
+        // Add Opname Button
+        document.getElementById('btnTambahOpname').addEventListener('click', () => {
+            document.getElementById('idOpname').value = generateId('OPN');
+            document.getElementById('formOpname').reset();
+            new bootstrap.Modal(document.getElementById('modalOpname')).show();
+        });
+
+        // Save Opname
+        document.getElementById('btnSimpanOpname').addEventListener('click', async () => {
+            const sistem = parseInt(document.getElementById('sistemOpname').value);
+            const fisik = parseInt(document.getElementById('fisikOpname').value);
+            const selisih = fisik - sistem;
+
+            const data = {
+                type: 'opname',
+                id_opname: document.getElementById('idOpname').value,
+                barang_opname: document.getElementById('barangOpname').value,
+                sistem: sistem,
+                fisik: fisik,
+                selisih: selisih,
+                keterangan: document.getElementById('keteranganOpname').value,
+                tanggal_opname: document.getElementById('tanggalOpname').value,
+                petugas: document.getElementById('petugasOpname').value,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalOpname')).hide();
+            }
+        });
+
+        // Add Log Keluar Button
+        document.getElementById('btnTambahLogKeluar').addEventListener('click', () => {
+            document.getElementById('idKeluar').value = generateId('OUT');
+            document.getElementById('formLogKeluar').reset();
+            new bootstrap.Modal(document.getElementById('modalLogKeluar')).show();
+        });
+
+        // Save Log Keluar
+        document.getElementById('btnSimpanLogKeluar').addEventListener('click', async () => {
+            const data = {
+                type: 'logkeluar',
+                id_keluar: document.getElementById('idKeluar').value,
+                barang_keluar: document.getElementById('barangKeluar').value,
+                jumlah_keluar: parseInt(document.getElementById('jumlahKeluar').value),
+                satuan: document.getElementById('satuanKeluar').value,
+                penerima: document.getElementById('penerimаKeluar').value,
+                keperluan: document.getElementById('perluanKeluar').value,
+                tanggal_keluar: document.getElementById('tanggalKeluar').value,
+                petugas_keluar: document.getElementById('petugasKeluar').value,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalLogKeluar')).hide();
+            }
+        });
+
+        // Add User Button
+        document.getElementById('btnTambahUser').addEventListener('click', () => {
+            document.getElementById('formUser').reset();
+            document.getElementById('usernameUser').disabled = false;
+            new bootstrap.Modal(document.getElementById('modalUser')).show();
+        });
+
+        // Save User
+        document.getElementById('btnSimpanUser').addEventListener('click', async () => {
+            const data = {
+                type: 'user',
+                username: document.getElementById('usernameUser').value,
+                password: document.getElementById('passwordUser').value,
+                role: document.getElementById('roleUser').value,
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(data);
+            if (result.isOk) {
+                bootstrap.Modal.getInstance(document.getElementById('modalUser')).hide();
+                updateUserTable();
+            }
+        });
+
+        // Search Aset
+        document.getElementById('searchAset').addEventListener('input', (e) => {
+            updateAsetTable(e.target.value);
+        });
+
+        // Search BHP
+        document.getElementById('searchBHP').addEventListener('input', (e) => {
+            updateBHPTable(e.target.value);
+        });
+
+        // Search Peminjaman
+        document.getElementById('searchPeminjaman').addEventListener('input', (e) => {
+            updatePeminjamanTable(e.target.value);
+        });
+
+        // Settings
+        document.getElementById('btnSimpanPengaturan').addEventListener('click', () => {
+            alert('Pengaturan tersimpan!');
+        });
+
+        // Update Functions
+        function updateAllUI() {
+            if (document.getElementById('asetTableBody') && !document.getElementById('aset-page').classList.contains('hidden')) {
+                updateAsetTable();
+            }
+            if (document.getElementById('bhpTableBody') && !document.getElementById('bhp-page').classList.contains('hidden')) {
+                updateBHPTable();
+            }
+            if (document.getElementById('peminjamanTableBody') && !document.getElementById('peminjaman-page').classList.contains('hidden')) {
+                updatePeminjamanTable();
+            }
+            if (document.getElementById('opnameTableBody') && !document.getElementById('stok-opname-page').classList.contains('hidden')) {
+                updateOpnameTable();
+            }
+            if (document.getElementById('keluarTableBody') && !document.getElementById('log-keluar-page').classList.contains('hidden')) {
+                updateKeluarTable();
+            }
+            updateUserTable();
+            updateDashboard();
+        }
+
+        function updateAsetTable(search = '') {
+            const tbody = document.getElementById('asetTableBody');
+            let asets = state.data.asets;
+            
+            if (search) {
+                asets = asets.filter(a => a.nama_barang?.toLowerCase().includes(search.toLowerCase()));
+            }
+
+            if (asets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = asets.map(aset => `
+                <tr>
+                    <td>${aset.id_aset}</td>
+                    <td>${aset.nama_barang}</td>
+                    <td>${aset.sumber_dana || '-'}</td>
+                    <td>${aset.tahun_anggaran || '-'}</td>
+                    <td>${formatDate(aset.tanggal_penerimaan)}</td>
+                    <td>${aset.kategori || '-'}</td>
+                    <td>${aset.jumlah}</td>
+                    <td><span class="badge ${aset.kondisi === 'Baik' ? 'badge-success' : aset.kondisi === 'Rusak Ringan' ? 'badge-warning' : 'badge-danger'}">${aset.kondisi}</span></td>
+                    <td>${aset.status}</td>
+                    <td>${aset.lokasi_ruangan || '-'}</td>
+                    <td>
+                        <button class="btn btn-edit">Edit</button>
+                        <button class="btn btn-delete">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateBHPTable(search = '') {
+            const tbody = document.getElementById('bhpTableBody');
+            let bhps = state.data.bhp;
+            
+            if (search) {
+                bhps = bhps.filter(b => b.nama_bhp?.toLowerCase().includes(search.toLowerCase()));
+            }
+
+            if (bhps.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = bhps.map(bhp => `
+                <tr>
+                    <td>${bhp.id_bhp}</td>
+                    <td>${bhp.nama_bhp}</td>
+                    <td>${bhp.kategori}</td>
+                    <td>${bhp.stok}</td>
+                    <td>${bhp.satuan}</td>
+                    <td>${bhp.minimal}</td>
+                    <td><span class="badge ${bhp.status_bhp === 'Aman' ? 'badge-success' : 'badge-danger'}">${bhp.status_bhp}</span></td>
+                    <td>
+                        <button class="btn btn-edit">Restok</button>
+                        <button class="btn btn-edit">Edit</button>
+                        <button class="btn btn-edit">Distribusi</button>
+                        <button class="btn btn-delete">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updatePeminjamanTable(search = '') {
+            const tbody = document.getElementById('peminjamanTableBody');
+            let peminjamans = state.data.peminjaman;
+            
+            if (search) {
+                peminjamans = peminjamans.filter(p => p.nama_barang?.toLowerCase().includes(search.toLowerCase()) || p.nama_peminjam?.toLowerCase().includes(search.toLowerCase()));
+            }
+
+            if (peminjamans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = peminjamans.map(p => `
+                <tr>
+                    <td>${p.id_log}</td>
+                    <td>${p.nama_barang}</td>
+                    <td>${p.nama_peminjam}</td>
+                    <td>${formatDate(p.tanggal_pinjam)}</td>
+                    <td>${formatDate(p.tanggal_kembali)}</td>
+                    <td><span class="badge ${p.status_pinjam === 'Aktif' ? 'badge-warning' : 'badge-success'}">${p.status_pinjam}</span></td>
+                    <td>
+                        <button class="btn btn-edit">Kembalikan</button>
+                        <button class="btn btn-edit">PDF</button>
+                        <button class="btn btn-edit">Excel</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateOpnameTable() {
+            const tbody = document.getElementById('opnameTableBody');
+            if (state.data.opnames.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = state.data.opnames.map(o => `
+                <tr>
+                    <td>${o.id_opname}</td>
+                    <td>${o.barang_opname}</td>
+                    <td>${o.sistem}</td>
+                    <td>${o.fisik}</td>
+                    <td>${o.selisih}</td>
+                    <td>${o.keterangan}</td>
+                    <td>${formatDate(o.tanggal_opname)}</td>
+                    <td>${o.petugas}</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateKeluarTable() {
+            const tbody = document.getElementById('keluarTableBody');
+            if (state.data.keluar.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 40px;">Tidak ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = state.data.keluar.map(k => `
+                <tr>
+                    <td>${k.id_keluar}</td>
+                    <td>${k.barang_keluar}</td>
+                    <td>${k.jumlah_keluar}</td>
+                    <td>${k.satuan}</td>
+                    <td>${k.penerima}</td>
+                    <td>${k.keperluan}</td>
+                    <td>${formatDate(k.tanggal_keluar)}</td>
+                    <td>${k.petugas_keluar}</td>
+                    <td><button class="btn btn-edit">Print</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            if (state.data.users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; font-size: 12px;">Tidak ada user</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = state.data.users.map(u => `
+                <tr>
+                    <td>${u.username}</td>
+                    <td><span class="role-badge role-${u.role.toLowerCase()}">${u.role}</span></td>
+                    <td>
+                        <button class="btn btn-edit">Edit</button>
+                        <button class="btn btn-delete">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateDashboard() {
+            document.getElementById('totalAset').textContent = state.data.asets.length;
+            document.getElementById('totalBHP').textContent = state.data.bhp.length;
+            
+            const dipinjam = state.data.peminjaman.filter(p => p.status_pinjam === 'Aktif').length;
+            document.getElementById('totalDipinjam').textContent = dipinjam;
+
+            const stokKritis = state.data.bhp.filter(b => b.status_bhp === 'Kritis').length;
+            document.getElementById('stokKritis').textContent = stokKritis;
+
+            updateCharts();
+        }
+
+        function updateCharts() {
+            // Kondisi Chart
+            const kondisiCount = {
+                'Baik': state.data.asets.filter(a => a.kondisi === 'Baik').length,
+                'Rusak Ringan': state.data.asets.filter(a => a.kondisi === 'Rusak Ringan').length,
+                'Rusak Berat': state.data.asets.filter(a => a.kondisi === 'Rusak Berat').length
+            };
+
+            const kondisiCanvas = document.getElementById('kondisiChart');
+            if (state.charts.kondisi) {
+                state.charts.kondisi.data.datasets[0].data = [kondisiCount['Baik'], kondisiCount['Rusak Ringan'], kondisiCount['Rusak Berat']];
+                state.charts.kondisi.update();
+            } else if (kondisiCanvas) {
+                state.charts.kondisi = new Chart(kondisiCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Baik', 'Rusak Ringan', 'Rusak Berat'],
+                        datasets: [{
+                            data: [kondisiCount['Baik'], kondisiCount['Rusak Ringan'], kondisiCount['Rusak Berat']],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // Tren Chart
+            const trenCanvas = document.getElementById('trenChart');
+            if (trenCanvas) {
+                if (state.charts.tren) {
+                    state.charts.tren.destroy();
+                }
+                state.charts.tren = new Chart(trenCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                        datasets: [{
+                            label: 'Konsumsi ATK',
+                            data: [65, 59, 80, 81, 56, 55],
+                            backgroundColor: '#2563eb'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            lucide.createIcons();
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a004894a7bd0f932',t:'MTc3OTU0NDI5Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
